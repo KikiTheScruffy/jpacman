@@ -4,8 +4,8 @@ plugins {
     id 'jacoco'
     id 'checkstyle'
     id 'pmd'
-    id 'com.github.spotbugs' version '1.7.1'
-    id 'org.sonarqube' version '3.1.1'
+    id "com.github.spotbugs" version "6.4.8"
+    id 'org.sonarqube' version '7.2.2.6593'
 }
 
 sourceSets {
@@ -30,17 +30,17 @@ repositories {
 }
 
 dependencies {
-    compile "com.google.guava:guava:$guavaVersion"
-
-
+    implementation "com.google.guava:guava:32.0.1-android"
     compileOnly "com.github.spotbugs:spotbugs-annotations:$spotbugsAnnotationsVersion"
-
-    testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
+    //testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
+    // Source: https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:6.1.0-M1'
     testCompile "org.mockito:mockito-core:$mockitoVersion"
-    testCompile "org.assertj:assertj-core:$assertjVersion"
+    // Source: https://mvnrepository.com/artifact/org.assertj/assertj-core
+    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.6.1'
 }
 
-task defaultTest(type: Test) {
+tasks.register('defaultTest', Test) {
     testClassesDirs = sourceSets.defaultTest.output.classesDirs
     classpath = sourceSets.defaultTest.runtimeClasspath
 }
@@ -57,13 +57,16 @@ defaultTest {
 
 jacoco {
     toolVersion = jacocoVersion
+    reportsDirectory = layout.buildDirectory.dir('customJacocoReportDir')
 }
 
 jacocoTestReport {
     executionData tasks.withType(Test)
     reports {
-        csv.enabled true
-        xml.enabled true
+        xml.required = true
+        layout.buildDirectory.dir('jacocoxml')
+        csv.required = true
+        layout.buildDirectory.dir('jacococsv')
     }
 }
 
@@ -77,26 +80,39 @@ pmd {
     ruleSets = []
 }
 
-tasks.withType(com.github.spotbugs.SpotBugsTask) {
-    reports {
-        xml.enabled = false
-        html.enabled = true
+tasks.spotbugsMain {
+    reports.create("html") {
+        required = true;
+    }
+    reports.create("xml") {
+        required = true;
     }
 }
 
-task staticAnalysis(type: GradleBuild) {
+tasks.register('staticAnalysis', GradleBuild) {
     tasks = [
-        'clean',
-        'checkstyleMain',
-        'checkstyleTest',
-        'checkstyleDefaultTest',
-        'pmdMain',
-        'pmdTest',
-        'pmdDefaultTest',
-        'spotbugsMain',
-        'spotbugsTest',
-        'spotbugsDefaultTest',
+            'clean',
+            'checkstyleMain',
+            'checkstyleTest',
+            'checkstyleDefaultTest',
+            'pmdMain',
+            'pmdTest',
+            'pmdDefaultTest',
+            'spotbugsMain',
+            'spotbugsTest',
+            'spotbugsDefaultTest',
     ]
 }
 
-mainClassName = 'nl.tudelft.jpacman.Launcher'
+application {
+    mainClass = 'nl.tudelft.jpacman.Launcher'
+}
+
+sonarqube {
+    properties {
+        property "sonar.projectKey", "JPacman"
+        property "sonar.host.url", "http://localhost:9000"
+        property "sonar.login", "admin"
+        property "sonar.password", "admin1234"
+    }
+}
