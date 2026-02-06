@@ -32,10 +32,10 @@ repositories {
 dependencies {
     implementation "com.google.guava:guava:32.0.1-android"
     compileOnly "com.github.spotbugs:spotbugs-annotations:$spotbugsAnnotationsVersion"
-    //testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
+    testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
     // Source: https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
     testImplementation 'org.junit.jupiter:junit-jupiter-api:6.1.0-M1'
-    testCompile "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation 'org.mockito:mockito-core:5.5.0'
     // Source: https://mvnrepository.com/artifact/org.assertj/assertj-core
     testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.6.1'
 }
