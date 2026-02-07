@@ -61,12 +61,7 @@ public class Player extends Unit {
      * @return <code>true</code> iff the player is lives.
      */
     public boolean isAlive() {
-        
-        if(lives > 0){
-            return true;
-        }
-
-        return false;
+        return lives > 0;
     }
 
     /**
@@ -78,11 +73,7 @@ public class Player extends Unit {
 
         this.lives -= 1;
 
-        if (this.lives > 0) {
-            deathSprite.setAnimating(false);
-            this.killer = null;
-        }
-        else {
+        if (this.lives == 0)  {
             deathSprite.restart();
         }
     }

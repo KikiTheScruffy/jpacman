@@ -88,9 +88,13 @@ public class LauncherSmokeTest {
 
         // Sleeping in tests is generally a bad idea.
         // Here we do it just to let the monsters move.
-        Thread.sleep(500L);
+        Thread.sleep(600L);
 
-        // we're close to monsters, this will get us killed.
+        // we're close to monsters, this will get us killed after we get hit 3 times.
+        move(game, Direction.WEST, 10);
+        move(game, Direction.EAST, 10);
+        move(game, Direction.WEST, 10);
+        move(game, Direction.EAST, 10);
         move(game, Direction.WEST, 10);
         move(game, Direction.EAST, 10);
         assertThat(player.isAlive()).isFalse();

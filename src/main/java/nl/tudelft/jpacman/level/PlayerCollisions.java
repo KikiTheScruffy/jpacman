@@ -15,9 +15,11 @@ import nl.tudelft.jpacman.points.PointCalculator;
  *
  */
 
-public class PlayerCollisions implements CollisionMap {
+public class PlayerCollisions extends CollisionInteractionMap {
 
     private PointCalculator pointCalculator;
+
+    private final CollisionMap collisions = defaultCollisions();
 
     /**
      * Create a simple player-based collision map, informing the
@@ -31,65 +33,34 @@ public class PlayerCollisions implements CollisionMap {
     }
 
     @Override
-    public void collide(Unit mover, Unit collidedOn) {
-        if (mover instanceof Player) {
-            playerColliding((Player) mover, collidedOn);
-        }
-        else if (mover instanceof Ghost) {
-            ghostColliding((Ghost) mover, collidedOn);
-        }
-        else if (mover instanceof Pellet) {
-            pelletColliding((Pellet) mover, collidedOn);
-        }
-    }
-
-    private void playerColliding(Player player, Unit collidedOn) {
-        if (collidedOn instanceof Ghost) {
-            playerVersusGhost(player, (Ghost) collidedOn);
-        }
-        if (collidedOn instanceof Pellet) {
-            playerVersusPellet(player, (Pellet) collidedOn);
-        }
-    }
-
-    private void ghostColliding(Ghost ghost, Unit collidedOn) {
-        if (collidedOn instanceof Player) {
-            playerVersusGhost((Player) collidedOn, ghost);
-        }
-    }
-
-    private void pelletColliding(Pellet pellet, Unit collidedOn) {
-        if (collidedOn instanceof Player) {
-            playerVersusPellet((Player) collidedOn, pellet);
-        }
-    }
-
-
-    /**
-     * Actual case of player bumping into ghost or vice versa.
-     *
-     * @param player
-     *          The player involved in the collision.
-     * @param ghost
-     *          The ghost involved in the collision.
-     */
-    public void playerVersusGhost(Player player, Ghost ghost) {
-        pointCalculator.collidedWithAGhost(player, ghost);
-        player.removeLife();
-        player.setKiller(ghost);
+    public void collide(Unit mover, Unit movedInto) {
+        collisions.collide(mover, movedInto);
     }
 
     /**
-     * Actual case of player consuming a pellet.
+     * Creates the default collisions Player-Ghost and Player-Pellet.
      *
-     * @param player
-     *           The player involved in the collision.
-     * @param pellet
-     *           The pellet involved in the collision.
+     * @return The collision map containing collisions for Player-Ghost and
+     *         Player-Pellet.
      */
-    public void playerVersusPellet(Player player, Pellet pellet) {
-        pointCalculator.consumedAPellet(player, pellet);
-        pellet.leaveSquare();
+    private CollisionInteractionMap defaultCollisions() {
+        CollisionInteractionMap collisionMap = new CollisionInteractionMap();
+
+        collisionMap.onCollision(Player.class, Ghost.class,
+            (player, ghost) -> {
+                pointCalculator.collidedWithAGhost(player, ghost);
+                player.removeLife();
+                if(!player.isAlive()){
+                    player.setKiller(ghost);
+                }
+            });
+
+        collisionMap.onCollision(Player.class, Pellet.class,
+            (player, pellet) -> {
+                pointCalculator.consumedAPellet(player, pellet);
+                pellet.leaveSquare();
+            });
+        return collisionMap;
     }
 
 }
