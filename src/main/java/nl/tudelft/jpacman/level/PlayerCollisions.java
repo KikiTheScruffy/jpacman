@@ -16,51 +16,26 @@ import nl.tudelft.jpacman.points.PointCalculator;
  */
 
 public class PlayerCollisions extends CollisionInteractionMap {
-
     private PointCalculator pointCalculator;
-
-    private final CollisionMap collisions = defaultCollisions();
-
     /**
-     * Create a simple player-based collision map, informing the
-     * point calculator about points to be added.
-     *
-     * @param pointCalculator
-     *             Strategy for calculating points.
-     */
+    * Create a simple player-based collision map, informing the
+    * point calculator about points to be added.
+    *
+    * @param pointCalculator
+    * Strategy for calculating points.
+    */
     public PlayerCollisions(PointCalculator pointCalculator) {
         this.pointCalculator = pointCalculator;
+        this.onCollision(Player.class, Ghost.class, (player, ghost) -> {
+            pointCalculator.collidedWithAGhost(player, ghost);
+            player.removeLife();
+            if(!player.isAlive()) {
+                player.setKiller(ghost);
+            }
+        });
+        this.onCollision(Player.class, Pellet.class, (player, pellet) -> {
+            pointCalculator.consumedAPellet(player, pellet);
+            pellet.leaveSquare();
+        });
     }
-
-    @Override
-    public void collide(Unit mover, Unit movedInto) {
-        collisions.collide(mover, movedInto);
-    }
-
-    /**
-     * Creates the default collisions Player-Ghost and Player-Pellet.
-     *
-     * @return The collision map containing collisions for Player-Ghost and
-     *         Player-Pellet.
-     */
-    private CollisionInteractionMap defaultCollisions() {
-        CollisionInteractionMap collisionMap = new CollisionInteractionMap();
-
-        collisionMap.onCollision(Player.class, Ghost.class,
-            (player, ghost) -> {
-                pointCalculator.collidedWithAGhost(player, ghost);
-                player.removeLife();
-                if(!player.isAlive()){
-                    player.setKiller(ghost);
-                }
-            });
-
-        collisionMap.onCollision(Player.class, Pellet.class,
-            (player, pellet) -> {
-                pointCalculator.consumedAPellet(player, pellet);
-                pellet.leaveSquare();
-            });
-        return collisionMap;
-    }
-
 }
